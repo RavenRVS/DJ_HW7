@@ -33,14 +33,14 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Метод для валидации. Вызывается при создании и обновлении."""
-        if self.context['request'].user.groups.filter(name='admin').exists():
+        if self.context['request'].user.is_staff:
             return data
 
-        elif 'status' not in list(data.keys()):
+        elif 'status' not in list(data.keys()) or 'OPEN' == data['status']:
             user = self.context['request'].user
             open_tasks_of_user = Advertisement.objects.filter(status='OPEN', creator=user)
             count_tasks = len(open_tasks_of_user)
-            if count_tasks > 10:
+            if count_tasks >= 10:
                 raise ValidationError('Допустимо не более 10 открытых задач на пользователя')
 
         return data
